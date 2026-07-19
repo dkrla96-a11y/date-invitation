@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나랑 데이트 갈래?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#FFF4F0;
+    --bg2:#FFE1EA;
+    --ink:#4A2B33;
+    --soft:#8A5C68;
+    --accent:#FF5C7C;
+    --accent-dark:#F04368;
+    --card:#FFFDFC;
+    --pink:#FFB3C4;
+    --pen:'Nanum Pen Script', cursive;
+    --ui:'Jua', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--ui);
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%);
+    display:flex;justify-content:center;
+    overflow-x:hidden;
+  }
+  .stage{
+    width:100%;max-width:430px;
+    min-height:100dvh;
+    padding:30px 26px 40px;
+    display:flex;flex-direction:column;
+    position:relative;
+    z-index:1;
+  }
+  .steps{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .step{display:none;text-align:center;animation:pop .5s cubic-bezier(.34,1.4,.5,1) both;}
+  .step.on{display:block;}
+  @keyframes pop{
+    from{opacity:0;transform:translateY(16px) scale(.97);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  .big{
+    font-family:var(--pen);
+    font-size:52px;
+    line-height:1.2;
+    word-break:keep-all;
+  }
+  .mid{
+    font-family:var(--pen);
+    font-size:40px;
+    line-height:1.25;
+    word-break:keep-all;
+  }
+  .sub{
+    margin-top:12px;
+    font-size:15px;
+    color:var(--soft);
+    letter-spacing:.02em;
+  }
+  .emoji-top{font-size:56px;display:block;margin-bottom:14px;}
+  /* ---------- buttons ---------- */
+  .actions{margin-top:40px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+  .btn{
+    font-family:var(--ui);
+    font-size:19px;
+    padding:16px 40px;
+    border-radius:999px;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+    box-shadow:0 8px 20px rgba(255,92,124,.35);
+    transition:transform .15s ease, background .2s ease, box-shadow .2s ease;
+    min-width:210px;
+  }
+  .btn:hover{background:var(--accent-dark);transform:translateY(-2px);}
+  .btn:active{transform:scale(.96);}
+  .btn:disabled{
+    background:#EBC9D2;box-shadow:none;cursor:default;transform:none;
+  }
+  #yesBtn{transition:transform .25s cubic-bezier(.34,1.5,.5,1), background .2s ease;}
+  #noBtn{
+    background:#fff;
+    color:var(--soft);
+    box-shadow:0 4px 12px rgba(74,43,51,.10);
+    font-size:16px;
+    padding:13px 32px;
+    min-width:0;
+    transition:transform .2s ease, opacity .3s ease, left .18s ease, top .18s ease;
+  }
+  #noBtn.free{position:fixed;z-index:30;}
+  .btn:focus-visible,.chip:focus-visible,.slot:focus-visible,.text-link:focus-visible,input:focus-visible{
+    outline:3px solid var(--accent);outline-offset:3px;
+  }
+  .text-link{
+    margin-top:22px;
+    font-family:var(--ui);
+    font-size:13px;
+    color:var(--soft);
+    background:none;border:none;cursor:pointer;
+    text-decoration:underline;text-underline-offset:4px;
+  }
+  .caption{
+    margin-top:16px;font-size:13px;color:var(--soft);
+    opacity:0;transition:opacity .5s ease;
+  }
+  .caption.show{opacity:1;}
+  /* ---------- date ---------- */
+  .datewrap{margin-top:36px;}
+  input[type=date]{
+    font-family:var(--ui);
+    font-size:19px;
+    color:var(--ink);
+    padding:16px 22px;
+    border:2px solid var(--pink);
+    border-radius:18px;
+    background:var(--card);
+    width:100%;
+    max-width:280px;
+    text-align:center;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  input[type=date]:focus{border-color:var(--accent);}
+  /* ---------- time / menu ---------- */
+  .slots{margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .slot{
+    font-family:var(--ui);
+    font-size:17px;
+    padding:18px 10px;
+    border-radius:18px;
+    border:2px solid var(--pink);
+    background:var(--card);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .15s ease, border-color .2s ease, background .2s ease;
+  }
+  .slot:hover{border-color:var(--accent);transform:translateY(-2px);}
+  .slot:active{transform:scale(.96);}
+  .tabs{margin-top:30px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+  .tab{
+    font-family:var(--ui);
+    font-size:15px;
+    padding:10px 14px;
+    border-radius:999px;
+    border:none;
+    background:rgba(255,255,255,.65);
+    color:var(--soft);
+    cursor:pointer;
+    transition:all .18s ease;
+  }
+  .tab.active{
+    background:var(--ink);
+    color:#fff;
+    transform:scale(1.06);
+  }
+  .chips{margin-top:18px;display:flex;flex-wrap:wrap;gap:9px;justify-content:center;align-content:flex-start;min-height:172px;}
+  .chip{
+    font-family:var(--ui);
+    font-size:15px;
+    padding:12px 18px;
+    border-radius:999px;
+    border:2px solid var(--pink);
+    background:var(--card);
+    color:var(--ink);
+    cursor:pointer;
+    transition:all .18s ease;
+  }
+  .chip.picked{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+    transform:scale(1.05);
+    box-shadow:0 6px 16px rgba(255,92,124,.3);
+  }
+  /* ---------- loading ---------- */
+  .beat{font-size:44px;animation:beat 1s ease-in-out infinite;display:inline-block;}
+  @keyframes beat{
+    0%,100%{transform:scale(1);}
+    30%{transform:scale(1.25);}
+    45%{transform:scale(1.1);}
+    60%{transform:scale(1.28);}
+  }
+  /* ---------- ticket ---------- */
+  .ticket{
+    margin:34px auto 0;
+    max-width:330px;
+    background:var(--card);
+    border-radius:22px;
+    box-shadow:0 14px 34px rgba(74,43,51,.14);
+    overflow:hidden;
+    text-align:left;
+    opacity:0;transform:translateY(12px);
+    transition:opacity .6s ease .2s, transform .6s ease .2s;
+    position:relative;
+  }
+  .ticket.show{opacity:1;transform:translateY(0);}
+  .t-head{
+    background:var(--accent);
+    color:#fff;
+    padding:16px 22px;
+    font-size:13px;
+    letter-spacing:.3em;
+    text-indent:.3em;
+    text-align:center;
+  }
+  .t-body{padding:20px 22px 16px;}
+  .t-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:9px 0;
+    border-bottom:1.5px dashed #F3D6DE;
+  }
+  .t-row:last-child{border-bottom:none;}
+  .t-label{font-size:12px;color:var(--soft);letter-spacing:.08em;}
+  .t-value{font-size:17px;color:var(--ink);text-align:right;word-break:keep-all;max-width:70%;}
+  .t-rip{
+    position:relative;
+    border-top:2px dashed #F0C7D2;
+    margin:0 14px;
+  }
+  .t-rip::before,.t-rip::after{
+    content:'';
+    position:absolute;top:-11px;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--bg2);
+  }
+  .t-rip::before{left:-25px;}
+  .t-rip::after{right:-25px;}
+  .t-foot{
+    padding:14px 22px 18px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .barcode{
+    height:30px;flex:1;margin-right:14px;
+    background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 10px);
+    opacity:.75;
+    border-radius:2px;
+  }
+  .t-no{font-size:11px;color:var(--soft);letter-spacing:.1em;}
+  .final-line{
+    margin-top:26px;
+    font-family:var(--pen);
+    font-size:30px;
+    opacity:0;transition:opacity .7s ease .7s;
+  }
+  .final-line.show{opacity:1;}
+  /* ---------- floating hearts bg ---------- */
+  .float-heart{
+    position:fixed;
+    bottom:-40px;
+    font-size:22px;
+    opacity:0;
+    animation:floatUp linear infinite;
+    z-index:0;
+    pointer-events:none;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(0) rotate(0deg);opacity:0;}
+    12%{opacity:.5;}
+    85%{opacity:.35;}
+    100%{transform:translateY(-110vh) rotate(30deg);opacity:0;}
+  }
+  /* ---------- burst hearts ---------- */
+  .burst{
+    position:fixed;
+    left:50%;top:42%;
+    font-size:22px;
+    pointer-events:none;
+    z-index:20;
+    animation:fly 1.4s cubic-bezier(.2,.7,.4,1) forwards;
+  }
+  @keyframes fly{
+    0%{transform:translate(-50%,-50%) scale(.4);opacity:1;}
+    100%{transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.15) rotate(var(--rot));opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important;}
+    .ticket,.final-line,.caption{opacity:1 !important;transform:none !important;}
+    .float-heart,.burst{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="steps">
+
+    <!-- 0. the question -->
+    <section class="step on" id="s0">
+      <span class="emoji-top">🥺👉👈</span>
+      <h1 class="big" id="askTitle">나랑<br>데이트 갈래?</h1>
+      <div class="actions">
+        <button class="btn" id="yesBtn" onclick="sayYes()">좋아! 💗</button>
+        <button class="btn" id="noBtn">아니...</button>
+      </div>
+    </section>
+
+    <!-- 1. date -->
+    <section class="step" id="s1">
+      <span class="emoji-top">📅</span>
+      <h1 class="mid">언제가 좋아?</h1>
+      <p class="sub">아무 날이나 골라, 다 비워둘게</p>
+      <div class="datewrap">
+        <input type="date" id="dateInput">
+      </div>
+      <div class="actions">
+        <button class="btn" id="dateNext" onclick="pickDate()" disabled>이 날로 할래!</button>
+      </div>
+    </section>
+
+    <!-- 2. time -->
+    <section class="step" id="s2">
+      <span class="emoji-top">⏰</span>
+      <h1 class="mid">몇 시에 만날까?</h1>
+      <div class="slots">
+        <button class="slot" onclick="pickTime('오후 1시')">☀️ 오후 1시</button>
+        <button class="slot" onclick="pickTime('오후 2시')">☀️ 오후 2시</button>
+        <button class="slot" onclick="pickTime('오후 3시')">🌤 오후 3시</button>
+        <button class="slot" onclick="pickTime('오후 4시')">🌤 오후 4시</button>
+        <button class="slot" onclick="pickTime('오후 5시')">🌇 오후 5시</button>
+        <button class="slot" onclick="pickTime('저녁 6시')">🌆 저녁 6시</button>
+        <button class="slot" onclick="pickTime('저녁 7시')">🌆 저녁 7시</button>
+        <button class="slot" onclick="pickTime('저녁 8시')">🌙 저녁 8시</button>
+        <button class="slot" onclick="pickTime('저녁 9시')">🌙 저녁 9시</button>
+        <button class="slot" onclick="pickTime('밤 10시')">✨ 밤 10시</button>
+      </div>
+    </section>
+
+    <!-- 3. place -->
+    <section class="step" id="s3">
+      <span class="emoji-top">📍</span>
+      <h1 class="mid">어디서 만날까?</h1>
+      <p class="sub" id="areaCrumb">동네까지 골라줘</p>
+      <div class="slots" id="cityWrap">
+        <button class="slot" onclick="pickCity('대구')">🏙️ 대구</button>
+        <button class="slot" onclick="pickCity('김천')">🍇 김천</button>
+      </div>
+      <div class="chips" id="areaChips" style="display:none;"></div>
+      <div><button class="text-link" id="areaBack" style="display:none;" onclick="areaBackFn()">← 뒤로</button></div>
+    </section>
+
+    <!-- 4. menu -->
+    <section class="step" id="s4">
+      <span class="emoji-top">🍽️</span>
+      <h1 class="mid">뭐 먹고 싶어?</h1>
+      <p class="sub">카테고리 넘나들면서 다 골라도 돼</p>
+      <div class="tabs" id="menuTabs"></div>
+      <div class="chips" id="menuChips"></div>
+      <div class="actions">
+        <button class="btn" id="menuNext" onclick="pickMenu()" disabled>이거 먹자!</button>
+      </div>
+    </section>
+
+    <!-- 5. loading -->
+    <section class="step" id="s5">
+      <span class="beat">💗</span>
+      <h1 class="mid" style="margin-top:16px;">데이트 준비하는 중...</h1>
+    </section>
+
+    <!-- 6. result -->
+    <section class="step" id="s6">
+      <h1 class="big" style="font-size:44px;">거절하지 않아서<br>기뻐 🥹</h1>
+
+      <div class="ticket" id="ticket">
+        <div class="t-head">DATE TICKET</div>
+        <div class="t-body">
+          <div class="t-row"><span class="t-label">DATE</span><span class="t-value" id="tDate"></span></div>
+          <div class="t-row"><span class="t-label">TIME</span><span class="t-value" id="tTime"></span></div>
+          <div class="t-row"><span class="t-label">PLACE</span><span class="t-value" id="tPlace"></span></div>
+          <div class="t-row"><span class="t-label">MENU</span><span class="t-value" id="tMenu"></span></div>
+        </div>
+        <div class="t-rip"></div>
+        <div class="t-foot">
+          <div class="barcode"></div>
+          <span class="t-no">NO. 0001</span>
+        </div>
+      </div>
+
+      <p class="final-line" id="finalLine"></p>
+      <a class="btn" id="smsBtn" href="#" style="display:none;margin-top:22px;text-decoration:none;">문자로 답장하기 💌</a>
+      <p class="caption show" id="captureNote" style="margin-top:14px;">이 화면 캡처해서 보내줘 📸</p>
+      <p class="caption" id="sentNote" style="display:none;margin-top:14px;">네 답장은 이미 잘 도착했어 💌</p>
+      <button class="text-link" onclick="location.reload()">처음부터 다시</button>
+    </section>
+
+    <!-- 7. decline -->
+    <section class="step" id="s7">
+      <span class="emoji-top">😌</span>
+      <h1 class="mid">그래, 알겠어!</h1>
+      <p class="sub">부담 주려던 건 아니야.<br>끝까지 눌러봐 준 것만으로 고마워 🙂</p>
+      <button class="text-link" onclick="location.reload()" style="margin-top:30px;">혹시 마음 바뀌면, 처음부터 😉</button>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  /* ✏️ 여기만 바꾸면 돼요 ------------------------------------ */
+  const TO = '하성';      // 상대방 이름 — 비우면 "나랑 데이트 갈래?"
+  const NOTIFY_URL = 'https://formspree.io/f/mnjedrng';  // 완료 시 이메일 자동 알림
+  const MY_PHONE = '';    // 내 휴대폰 번호 (예: '01012345678') — 넣으면 마지막에 '문자로 답장하기' 버튼 생김
+  /* ---------------------------------------------------------- */
+
+  const state = { date:'', dateLabel:'', time:'', menu:[], city:'', gu:'', dong:'', place:'' };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if(TO){
+    const last = TO.charCodeAt(TO.length - 1);
+    const suffix = (last >= 0xAC00 && last <= 0xD7A3 && (last - 0xAC00) % 28 > 0) ? '아' : '야';
+    document.getElementById('askTitle').innerHTML = TO + suffix + ',<br>나랑 데이트 갈래?';
+  }
+
+  /* floating bg hearts */
+  if(!reduced){
+    const marks = ['💗','🩷','💖','🤍','💘'];
+    for(let i=0;i<9;i++){
+      const h = document.createElement('span');
+      h.className = 'float-heart';
+      h.textContent = marks[i % marks.length];
+      h.style.left = (5 + Math.random()*90) + 'vw';
+      h.style.fontSize = (14 + Math.random()*16) + 'px';
+      h.style.animationDuration = (9 + Math.random()*8) + 's';
+      h.style.animationDelay = (Math.random()*9) + 's';
+      document.body.appendChild(h);
+    }
+  }
+
+  function show(n){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+    document.getElementById('s'+n).classList.add('on');
+  }
+
+  /* ---------- the No button that never says no ---------- */
+  const noBtn = document.getElementById('noBtn');
+  const yesBtn = document.getElementById('yesBtn');
+  const noLabels = ['아니...','정말? 🥲','마지막으로 물어볼게!'];
+  let dodge = 0;
+
+  function runAway(e){
+    if(dodge >= 2) return; // 두 번 도망간 뒤엔 얌전히 눌리게
+    if(e && e.cancelable) e.preventDefault();
+    dodge++;
+    noBtn.textContent = noLabels[dodge];
+    noBtn.classList.add('free');
+    const pad = 70;
+    const x = pad + Math.random() * (window.innerWidth - noBtn.offsetWidth - pad*2);
+    const y = pad + Math.random() * (window.innerHeight - noBtn.offsetHeight - pad*2);
+    noBtn.style.left = Math.max(10,x) + 'px';
+    noBtn.style.top = Math.max(10,y) + 'px';
+    yesBtn.style.transform = 'scale(' + (1 + dodge*.08) + ')';
+  }
+  noBtn.addEventListener('pointerenter', runAway);
+  noBtn.addEventListener('touchstart', runAway, {passive:false});
+  noBtn.addEventListener('click', ()=>{
+    if(dodge < 2){ runAway(); return; }
+    show(7);
+  });
+
+  function sayYes(){
+    noBtn.style.opacity = 0;
+    noBtn.style.pointerEvents = 'none';
+    show(1);
+  }
+
+  /* ---------- date ---------- */
+  const dateInput = document.getElementById('dateInput');
+  const today = new Date();
+  dateInput.min = today.toISOString().split('T')[0];
+  dateInput.addEventListener('change', ()=>{
+    document.getElementById('dateNext').disabled = !dateInput.value;
+  });
+  function pickDate(){
+    const d = new Date(dateInput.value + 'T00:00:00');
+    const days = ['일','월','화','수','목','금','토'];
+    state.dateLabel = (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + days[d.getDay()] + ')';
+    show(2);
+  }
+
+  /* ---------- time ---------- */
+  function pickTime(t){
+    state.time = t;
+    show(3);
+  }
+
+  /* ---------- place ---------- */
+  const AREAS = {
+    '대구': {
+      '중구': ['동성로','동인동','삼덕동','성내동','대봉동','남산동','대신동','계산동'],
+      '동구': ['신암동','신천동','효목동','동촌','방촌동','지저동','불로동','봉무동','율하동','신서동','각산동','공산동'],
+      '서구': ['내당동','비산동','평리동','원대동','중리동','상리동','이현동'],
+      '남구': ['이천동','봉덕동','대명동','앞산'],
+      '북구': ['고성동','칠성동','침산동','산격동','대현동','복현동','검단동','동변동','서변동','태전동','구암동','관음동','읍내동','동천동','국우동'],
+      '수성구': ['범어동','만촌동','수성동','황금동','지산동','범물동','두산동','상동','중동','파동','신매동','사월동','매호동','고산'],
+      '달서구': ['두류동','성당동','감삼동','본리동','죽전동','장기동','용산동','이곡동','신당동','월성동','진천동','상인동','도원동','송현동','대곡동','유천동'],
+      '달성군': ['화원읍','다사읍','가창면','옥포읍','논공읍','현풍읍','유가읍','구지면','하빈면'],
+      '군위군': ['군위읍','효령면','부계면','우보면','의흥면','산성면','소보면','삼국유사면']
+    },
+    '김천': {
+      '시내 동네': ['평화동','남산동','성내동','신음동','교동','삼락동','문당동','부곡동','지좌동','덕곡동','다수동','백옥동','모암동','감호동','용두동','황금동','양천동','율곡동'],
+      '읍·면': ['아포읍','농소면','남면','개령면','감문면','어모면','봉산면','대항면','감천면','조마면','구성면','지례면','부항면','대덕면','증산면']
+    }
+  };
+
+  function pickCity(city){
+    state.city = city; state.gu = '';
+    document.getElementById('cityWrap').style.display = 'none';
+    document.getElementById('areaChips').style.display = 'flex';
+    document.getElementById('areaBack').style.display = 'inline-block';
+    renderGu();
+  }
+  function renderGu(){
+    state.gu = '';
+    document.getElementById('areaCrumb').textContent = state.city + ' — 어느 쪽이야?';
+    const wrap = document.getElementById('areaChips');
+    wrap.innerHTML = '';
+    Object.keys(AREAS[state.city]).forEach(gu=>{
+      const c = document.createElement('button');
+      c.className = 'chip';
+      c.textContent = gu;
+      c.onclick = ()=>{ state.gu = gu; renderDong(); };
+      wrap.appendChild(c);
+    });
+  }
+  function renderDong(){
+    document.getElementById('areaCrumb').textContent = state.city + ' ' + state.gu + ' — 동네를 골라줘';
+    const wrap = document.getElementById('areaChips');
+    wrap.innerHTML = '';
+    AREAS[state.city][state.gu].forEach(d=>{
+      const c = document.createElement('button');
+      c.className = 'chip';
+      c.textContent = d;
+      c.onclick = ()=>{
+        state.dong = d;
+        state.place = (state.city === '김천') ? '김천 ' + d : state.city + ' ' + state.gu + ' ' + d;
+        show(4);
+      };
+      wrap.appendChild(c);
+    });
+  }
+  function areaBackFn(){
+    if(state.gu){
+      renderGu();
+    } else {
+      document.getElementById('cityWrap').style.display = 'grid';
+      document.getElementById('areaChips').style.display = 'none';
+      document.getElementById('areaBack').style.display = 'none';
+      document.getElementById('areaCrumb').textContent = '동네까지 골라줘';
+    }
+  }
+
+  /* ---------- menu ---------- */
+  const MENUS = {
+    '한식 🍚': ['삼겹살 🥓','소고기 구이 🥩','갈비찜 🍖','김치찌개 🍲','비빔밥 🍚','국밥 🥘','떡볶이 🌶️','치킨 🍗'],
+    '양식 🍝': ['파스타 🍝','스테이크 🥩','피자 🍕','수제버거 🍔','리조또 🥘','샐러드 🥗','브런치 🥞'],
+    '중식 🥟': ['짜장면 🍜','짬뽕 🌶️','탕수육 🍖','마라탕 🔥','마라샹궈 🥘','양꼬치 🍢','딤섬 🥟','훠궈 🍲'],
+    '일식 🍣': ['초밥 🍣','오마카세 ✨','라멘 🍜','돈카츠 🍱','우동 🍥','사시미 🐟','규동 🍚','이자카야 🏮']
+  };
+  let activeCat = '한식 🍚';
+
+  function renderTabs(){
+    const wrap = document.getElementById('menuTabs');
+    wrap.innerHTML = '';
+    Object.keys(MENUS).forEach(cat=>{
+      const b = document.createElement('button');
+      b.className = 'tab' + (cat === activeCat ? ' active' : '');
+      b.textContent = cat;
+      b.onclick = ()=>{ activeCat = cat; renderTabs(); renderChips(); };
+      wrap.appendChild(b);
+    });
+  }
+  function renderChips(){
+    const wrap = document.getElementById('menuChips');
+    wrap.innerHTML = '';
+    MENUS[activeCat].forEach(name=>{
+      const c = document.createElement('button');
+      c.className = 'chip' + (state.menu.includes(name) ? ' picked' : '');
+      c.textContent = name;
+      c.onclick = ()=>{
+        const i = state.menu.indexOf(name);
+        if(i > -1) state.menu.splice(i,1); else state.menu.push(name);
+        c.classList.toggle('picked');
+        document.getElementById('menuNext').disabled = state.menu.length === 0;
+      };
+      wrap.appendChild(c);
+    });
+  }
+  renderTabs();
+  renderChips();
+
+  function pickMenu(){
+    show(5);
+    setTimeout(finish, reduced ? 200 : 1800);
+  }
+
+  /* ---------- finale ---------- */
+  function finish(){
+    document.getElementById('tDate').textContent = state.dateLabel;
+    document.getElementById('tTime').textContent = state.time;
+    document.getElementById('tPlace').textContent = state.place;
+    document.getElementById('tMenu').textContent = state.menu.join(' · ');
+    document.getElementById('finalLine').textContent =
+      '그날 ' + state.time + '에 데리러 갈게 💗';
+
+    if(NOTIFY_URL){
+      fetch(NOTIFY_URL, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          알림: '💗 데이트 신청 수락!',
+          날짜: state.dateLabel,
+          시간: state.time,
+          장소: state.place,
+          메뉴: state.menu.join(', ')
+        })
+      }).then(r=>{
+        if(r.ok){
+          document.getElementById('captureNote').style.display = 'none';
+          const s = document.getElementById('sentNote');
+          s.style.display = 'block';
+          s.classList.add('show');
+        }
+      }).catch(()=>{});
+    }
+    if(MY_PHONE){
+      const body = '좋아! 💗 ' + state.dateLabel + ' ' + state.time + ' · ' + state.place + ' · ' + state.menu.join('·');
+      const sep = /iPhone|iPad|Macintosh/i.test(navigator.userAgent) ? '&body=' : '?body=';
+      const a = document.getElementById('smsBtn');
+      a.href = 'sms:' + MY_PHONE + sep + encodeURIComponent(body);
+      a.style.display = 'inline-block';
+    }
+
+    show(6);
+    requestAnimationFrame(()=>{
+      document.getElementById('ticket').classList.add('show');
+      document.getElementById('finalLine').classList.add('show');
+    });
+    if(!reduced) burstHearts();
+  }
+
+  function burstHearts(){
+    const marks = ['💗','💖','🩷','✨','🤍'];
+    for(let i=0;i<26;i++){
+      const b = document.createElement('span');
+      b.className = 'burst';
+      b.textContent = marks[i % marks.length];
+      b.style.setProperty('--dx', (Math.random()*320 - 160) + 'px');
+      b.style.setProperty('--dy', (Math.random()*-300 - 40) + 'px');
+      b.style.setProperty('--rot', (Math.random()*80 - 40) + 'deg');
+      b.style.animationDelay = (Math.random()*.25) + 's';
+      document.body.appendChild(b);
+      setTimeout(()=>b.remove(), 2000);
+    }
+  }
+</script>
+</body>
+</html>
